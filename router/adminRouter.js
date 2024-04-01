@@ -24,7 +24,12 @@ import {
   postTracking,
   getTracking,
   deleteTracking,
-  updateTracking
+  updateTracking,
+  postAnnouncement,
+  updateAnnouncement,
+  getAnnouncement,
+  deleteAnnouncement,
+  fetchAllEmployee
 } from "../controller/adminController.js";
 import isAuthenticated from "../middleware/auth.js";
 import { upload } from "../middleware/multer.js";
@@ -57,7 +62,8 @@ router.get("/getIndicator", getIndicator);
 router.delete("/deleteIndicator/:id", deleteIndicator);
 router.put("/updateIndicator/:id", updateIndicator);
 
-router.get("/fetchEmployee" , fetchEmployee);
+router.post("/fetchEmployee" , fetchEmployee);
+router.get("/fetchEmployee" , fetchAllEmployee);
 
 router.post('/postapp',postApprisal);
 router.get('/getApp',getApprisal);
@@ -73,5 +79,11 @@ router.post('/postTrack',postTracking);
 router.get('/getTrack',getTracking);
 router.delete("/deleteTrack/:id", deleteTracking);
 router.put("/updateTrack/:id", updateTracking);
+
+router.post('/postAnnouncement',postAnnouncement);
+router.get('/getAnnouncement', getAnnouncement);
+router.delete("/deleteAnnouncement/:id",deleteAnnouncement);
+router.put("/updateAnnouncement/:id", updateAnnouncement);
+
 
 export default router;

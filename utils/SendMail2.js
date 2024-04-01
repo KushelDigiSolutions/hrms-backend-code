@@ -1,6 +1,6 @@
 import { createTransport } from 'nodemailer';
 
-export const mailSender = async(email) => {
+export const mailSender = async(email , subject = "This is an indicator mail") => {
     try {
         let transporter = createTransport({
             host: "smtp.gmail.com",
@@ -16,7 +16,7 @@ export const mailSender = async(email) => {
         let info = await transporter.sendMail({
             from: 'Kushel Digi Solutions" <info@kusheldigi.com>',
             to: `${email}`,
-            subject: 'This is an indicator mail',
+            subject: subject,
             html: '<div>This is an indicator HTML</div>'
         });
 

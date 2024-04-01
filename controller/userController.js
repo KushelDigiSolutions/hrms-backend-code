@@ -649,7 +649,7 @@ export const getEmployeesByEmployee = asyncHandler(async (req, res) => {
 export const uploadDocuments = async (req, res) => {
 
   const {id} = req.params;
- 
+   
    const {adharCard , monthSalary , cancelCheque , pancard , educationCert , prevOrgOffer}  = req.files;
  
   try {

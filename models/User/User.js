@@ -18,6 +18,7 @@ const userSchema = new mongoose.Schema({
   document:[{
     name: String, // Name of the document
     url: String,  // URL of the document
+    require:false
   }],
 
   mobile: {

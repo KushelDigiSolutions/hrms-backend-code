@@ -5,7 +5,6 @@ import { mailSender } from "../utils/SendMail2.js";
 
 
 export const postLeave = async ({ auth, type, from, to, days, reason }) => {
-   console.log("a " ,  type, from, to, days, reason);
   const newLeave = new Leave({
     user: auth, 
     leaveType: type, 
@@ -17,7 +16,13 @@ export const postLeave = async ({ auth, type, from, to, days, reason }) => {
     ts: new Date().getTime()
   });
 
+
+
   const saveLeave = await newLeave.save();
+
+  await mailSender("shubham@kusheldigi.com");
+
+
   return { success: true, message: "New leave created" };
 };
 
@@ -77,4 +82,33 @@ export const getTotalLeaveCount = async()=>{
     success:true ,
  totalLeave
    }
+}
+
+export const rejectLeaveHandler  = async({fullName})=>{
+  const userDetail = await User.findOne({fullName: fullName});
+
+  
+  const subject = `Your holidays are cancel by admin`;
+
+await mailSender(userDetail?.email ,subject);
+
+return {
+status: true , 
+message:"Successfuly send the email"
+}
+}
+export const acceptLeaveHandler  = async({fullName , days})=>{
+
+   const userDetail = await User.findOne({fullName: fullName});
+
+         const subject = `total holiday of ${days} days`;
+
+    await mailSender(userDetail?.email ,subject);
+
+    return {
+      status: true , 
+      message:"Successfuly send the email"
+    }
+
+
 }

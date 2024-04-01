@@ -3,6 +3,7 @@ import Hr from "../models/Hr/Hr.js";
 import Indicator from "../models/Indicator/Indicator.js";
 import Apprisal from "../models/Apprisial/Apprisal.js";
 import Assets from "../models/Assets/Assets.js";
+import Announcement from "../models/Announcement/Announcement.js";
 import Tracking from "../models/Tracking/Tracking.js";
 import User from "../models/User/User.js";
 import Project from "../models/Project/Project.js";
@@ -624,8 +625,25 @@ export const getApprisal = asyncHandler(async (req, res) => {
 
 export const fetchEmployee = asyncHandler(async (req, res) => {
 
-  const users = await User.find({ role: 'EMPLOYEE' }, 'fullName _id');
-  res.status(200).json({ success: true, data: users });
+   const {department} = req.body;
+
+     const emp = await User.find({department: department});
+
+      return res.status(200).json({
+        status: true ,
+         emp
+      })
+  
+
+})
+
+export const fetchAllEmployee = asyncHandler(async(req ,res)=>{
+  const  emp = await User.find({});
+
+   return res.status(200).json({
+    status:true , 
+    emp
+   })
 })
 
 export const deleteApprisal = asyncHandler(async (req, res) => {
@@ -818,6 +836,107 @@ export const updateTracking = asyncHandler(async (req, res) => {
     .status(200)
     .json(new ApiResponse(200, updateTracking, "Updated  Successfully"));
 });
+
+// ========================announcement controller================
+export const postAnnouncement = asyncHandler(async (req, res) => {
+  const { title, Branch, Department, Employee, startDate,endDate , description } = req.body;
+
+  // retreiving all the user of same department and designation 
+  if(Employee === "All Employee"){
+
+    const users = await User.find({ department: Department});
+ 
+     console.log('users ',users);
+
+     for (const user of users) {
+      await mailSender(user.email);
+    }
+    
+    
+  }
+  else {
+
+     const user = await User.findOne({fullName: Employee});
+     console.log("single ",user);
+    await mailSender(user.email);
+  }
+
+ 
+  const announcement = await Announcement.create({
+    title, 
+    Branch, 
+    Department, 
+    Employee, 
+    startDate,
+    endDate,
+    description: description,
+    ts: new Date().getTime(),
+    status: "true",
+  });
+  return res
+    .status(200)
+    .json(new ApiResponse(200, announcement, " successfully posted"));
+});
+
+
+export const getAnnouncement = asyncHandler(async (req, res) => {
+  const data = await Announcement.find();
+  return res
+    .status(200)
+    .json(new ApiResponse(200, data, " Successfully fetched all the Announcement"));
+});
+
+
+export const deleteAnnouncement = asyncHandler(async (req, res) => {
+  const { id } = req.params;
+
+  const data = await Announcement.findByIdAndDelete(id);
+  return res
+    .status(200)
+    .json(new ApiResponse(200, data, "Deleted   Successfully"));
+});
+
+export const updateAnnouncement = asyncHandler(async (req, res) => {
+  const { title, Branch, Department, Employee, startDate,endDate,description } = req.body;
+  const { id } = req.params;
+  let updateObj = removeUndefined({title, Branch, Department, Employee, startDate,endDate,description});
+
+
+  // retreiving all the user of same department and designation 
+  if(Employee === "All Employee"){
+
+    const users = await User.find({ department: Department});
+ 
+     console.log('users ',users);
+
+     for (const user of users) {
+      await mailSender(user.email);
+    }
+    
+    
+  }
+  else {
+
+     const user = await User.findOne({fullName: Employee});
+     console.log("single ",user);
+    await mailSender(user.email);
+  }
+
+
+  const updateAnnouncement = await Announcement.findByIdAndUpdate(
+    id,
+    {
+      $set: updateObj,
+    },
+    {
+      new: true,
+    }
+  );
+  return res
+    .status(200)
+    .json(new ApiResponse(200, updateAnnouncement, "Updated  Successfully"));
+});
+
 
 
 

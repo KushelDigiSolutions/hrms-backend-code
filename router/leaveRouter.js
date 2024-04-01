@@ -1,5 +1,5 @@
 import { Router } from "express";
-import { postLeave, updateLeave, getUserLeaves,getTotalLeaveCount, getUserLeaveById, deleteLeave, deleteAllLeaves } from "../controller/leaveController.js";
+import { postLeave, updateLeave, getUserLeaves,getTotalLeaveCount, getUserLeaveById, deleteLeave, deleteAllLeaves , rejectLeaveHandler ,  acceptLeaveHandler } from "../controller/leaveController.js";
 import isAuthenticated from "../middleware/auth.js";
 
 const router = Router();
@@ -99,6 +99,31 @@ router.delete("/deleteAllLeaves", async (req, res) => {
   try {
     const data = await deleteAllLeaves();
     if (data.success) {
+      res.json(data);
+    } else {
+      res.status(400).json(data);
+    }
+  } catch (error) {
+    console.log(error);
+  }
+});
+
+router.post("/acceptLeave" , async (req, res) => {
+  try {
+    const data = await acceptLeaveHandler({ ...req.body });
+    if (data.status) {
+      res.json(data);
+    } else {
+      res.status(400).json(data);
+    }
+  } catch (error) {
+    console.log(error);
+  }
+});
+router.post("/rejectLeave" , async (req, res) => {
+  try {
+    const data = await rejectLeaveHandler({ ...req.body });
+    if (data.status) {
       res.json(data);
     } else {
       res.status(400).json(data);

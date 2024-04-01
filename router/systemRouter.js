@@ -19,6 +19,7 @@ import {
   getBranchs,
   postBranch,
   updateBranch,
+  getEmployess
 } from "../controller/systemController.js";
 
 const router = Router();
@@ -52,6 +53,7 @@ router.post("/postDesignation", postDesignation);
 router.put("/updateDesignation/:id", updateDesignation);
 
 router.get("/getDesignations/:id", getDesignations);
+router.get("/getEmployeess/:id",getEmployess);
 router.get("/getDesignation", getDesignation);
 
 router.delete("/deleteDesignation/:id", deleteDesignation);

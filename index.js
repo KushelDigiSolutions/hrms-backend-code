@@ -12,7 +12,8 @@ import projectRouter from "./router/projectRouter.js";
 import holidayRouter from "./router/holidayRouter.js";
 import taskRouter from "./router/taskRouter.js";
 import chatRouter from "./router/chatRouter.js";
-import announcementRouter from "./router/announcementRouter.js";
+import notification from "./router/notification.js"
+// import announcementRouter from "./router/announcementRouter.js";
 import attendanceRouter from "./router/attendanceRouter.js";
 import authRouter from "./router/authRouter.js";
 import systemRouter from "./router/systemRouter.js";
@@ -65,7 +66,9 @@ app.use("/project", projectRouter);
 app.use("/holiday", holidayRouter);
 app.use("/task", taskRouter);
 app.use("/chat", chatRouter);
-app.use("/announcement", announcementRouter);
+app.use("/notification", notification);
+
+// app.use("/announcement", announcementRouter);
 app.use("/attendance", attendanceRouter);
 app.use("/auth", authRouter);
 app.use("/system", systemRouter); 

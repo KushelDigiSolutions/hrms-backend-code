@@ -5,11 +5,11 @@ import LeaveType from "../models/LeaveType/LeaveType.js";
 import { ApiResponse } from "../utils/ApiResponse.js";
 import { asyncHandler } from "../utils/AsyncHandler.js";
 import { removeUndefined } from "../utils/util.js";
-
+import User from "../models/User/User.js";
 export const postLeaveType = asyncHandler(async (req, res) => {
   const { name, days } = req.body;
-  const existLeave = await LeaveType.findOne({name});
-  if(existLeave){
+  const existLeave = await LeaveType.findOne({ name });
+  if (existLeave) {
     return res.status(400).json({
       success: false,
       message: "Leave Name Alreday Exist",
@@ -29,7 +29,7 @@ export const postLeaveType = asyncHandler(async (req, res) => {
 export const updateLeaveType = asyncHandler(async (req, res) => {
   const { status, name, days } = req.body;
   const { id } = req.params;
-  let updateObj=removeUndefined({status, name, days});
+  let updateObj = removeUndefined({ status, name, days });
   // console.log(status, name);
   // console.log(id);
 
@@ -65,13 +65,13 @@ export const deleteLeaveType = asyncHandler(async (req, res) => {
 
 export const postBranch = asyncHandler(async (req, res) => {
   const { name } = req.body;
- const existBranchName = await Branch.findOne({name});
- if(existBranchName){
-  return res.status(400).json({
-    success: false,
-    message: "Branch Name Alreday Exist",
-  });
- }
+  const existBranchName = await Branch.findOne({ name });
+  if (existBranchName) {
+    return res.status(400).json({
+      success: false,
+      message: "Branch Name Alreday Exist",
+    });
+  }
   const newBranch = await Branch.create({
     name,
     ts: new Date().getTime(),
@@ -79,13 +79,13 @@ export const postBranch = asyncHandler(async (req, res) => {
   });
   return res
     .status(200)
-    .json(new ApiResponse(200, newBranch, " successfully posted",existBranchName));
+    .json(new ApiResponse(200, newBranch, " successfully posted", existBranchName));
 });
 
 export const updateBranch = asyncHandler(async (req, res) => {
   const { status, name } = req.body;
   const { id } = req.params;
-  let updateObj=removeUndefined({status, name});
+  let updateObj = removeUndefined({ status, name });
   // console.log(status, name);
   // console.log(id);
 
@@ -121,12 +121,12 @@ export const deleteBranch = asyncHandler(async (req, res) => {
 
 export const postDepartment = asyncHandler(async (req, res) => {
   const { name, branch } = req.body;
-  const existDepartment = await Department.findOne({name});
-  if(existDepartment){
+  const existDepartment = await Department.findOne({ name });
+  if (existDepartment) {
     return res.status(400).json({
       success: false,
       message: "Department Name Alreday Exist",
-    }); 
+    });
   }
   const newDepartment = await Department.create({
     name,
@@ -142,7 +142,7 @@ export const postDepartment = asyncHandler(async (req, res) => {
 export const updateDepartment = asyncHandler(async (req, res) => {
   const { status, name } = req.body;
   const { id } = req.params;
-  let updateObj=removeUndefined({status, name});
+  let updateObj = removeUndefined({ status, name });
   const updateuserDepartment = await Department.findByIdAndUpdate(
     id,
     {
@@ -176,8 +176,8 @@ export const deleteDepartment = asyncHandler(async (req, res) => {
 export const postDesignation = asyncHandler(async (req, res) => {
   const { name, department } = req.body;
   console.log(req.body);
-  const existDesignation = await Designation.findOne({name});
-  if(existDesignation){
+  const existDesignation = await Designation.findOne({ name });
+  if (existDesignation) {
     return res.status(400).json({
       success: false,
       message: "Designation Name Alreday Exist",
@@ -197,7 +197,7 @@ export const postDesignation = asyncHandler(async (req, res) => {
 export const updateDesignation = asyncHandler(async (req, res) => {
   const { status, name } = req.body;
   const { id } = req.params;
-  let updateObj=removeUndefined({status, name});
+  let updateObj = removeUndefined({ status, name });
   const updateuserDesignation = await Designation.findByIdAndUpdate(
     id,
     {
@@ -213,7 +213,7 @@ export const updateDesignation = asyncHandler(async (req, res) => {
 });
 
 export const getDesignation = asyncHandler(async (req, res) => {
- 
+
 
   const data = await Designation.find({});
 
@@ -224,15 +224,29 @@ export const getDesignation = asyncHandler(async (req, res) => {
 
 });
 export const getDesignations = asyncHandler(async (req, res) => {
- 
 
-   const {id} = req.params;
 
-    const designations = await Designation.find({ 'department._id': id }).select('name _id');
+  const { id } = req.params;
+
+  const designations = await Designation.find({ 'department._id': id }).select('name _id');
 
   return res
     .status(200)
     .json(new ApiResponse(200, designations, "Designationes fetched Successfully"));
+
+
+});
+
+export const getEmployess = asyncHandler(async (req, res) => {
+
+
+  const { id } = req.params;
+
+  const users = await User.find({ 'department._id': id }).select('fullName _id');
+
+  return res
+    .status(200)
+    .json(new ApiResponse(200, users, "Users fetched Successfully"));
 
 
 });
