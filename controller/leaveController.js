@@ -20,7 +20,12 @@ export const postLeave = async ({ auth, type, from, to, days, reason }) => {
 
   const saveLeave = await newLeave.save();
 
-  await mailSender("shubham@kusheldigi.com");
+  await mailSender("shubham@kusheldigi.com" , "Regarding Leave" ,  `<div>
+  <div>from: ${from}</div>
+  <div>to: ${to}</div>
+  <div>days: ${days}</div>
+  <div>reason: ${reason}</div>
+  </div>`);
 
 
   return { success: true, message: "New leave created" };
@@ -39,7 +44,12 @@ export const updateLeave = async ({ auth,employeeName ,  id, leaveType, from, to
 
    const employe = await User.findOne({fullName: employeeName});
 
-   await mailSender(employe.email);
+   await mailSender(employe.email ,"update Leave " , `<div>
+   <div>from: ${from}</div>
+   <div>to: ${to}</div>
+   <div>days: ${days}</div>
+   <div>reason: ${reason}</div>
+  </div>`)
     
 
   return { success: true, message: "Leave updated" };
@@ -88,9 +98,11 @@ export const rejectLeaveHandler  = async({fullName})=>{
   const userDetail = await User.findOne({fullName: fullName});
 
   
-  const subject = `Your holidays are cancel by admin`;
+await mailSender(userDetail?.email ,"Regarding holiday cancel " , `<div>
+<div>Your holidays are cancel by admin</div>
 
-await mailSender(userDetail?.email ,subject);
+</div>`)
+ 
 
 return {
 status: true , 
@@ -103,7 +115,11 @@ export const acceptLeaveHandler  = async({fullName , days})=>{
 
          const subject = `total holiday of ${days} days`;
 
-    await mailSender(userDetail?.email ,subject);
+    await mailSender(userDetail?.email ,"Accept Leave " , `<div>
+   <div>total holiday of ${days} days Accepted</div>
+
+  </div>`)
+    
 
     return {
       status: true , 

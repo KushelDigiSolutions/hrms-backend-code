@@ -5,8 +5,12 @@ import Apprisal from "../models/Apprisial/Apprisal.js";
 import Assets from "../models/Assets/Assets.js";
 import Announcement from "../models/Announcement/Announcement.js";
 import Tracking from "../models/Tracking/Tracking.js";
+import Termination from "../models/Termination/Termination.js";
+import Warning from "../models/Warning/Warning.js";
+import Complain from "../models/Complain/Complain.js";
 import User from "../models/User/User.js";
 import Project from "../models/Project/Project.js";
+import { createTransport } from "nodemailer";
 import { ApiError } from "../utils/ApiError.js";
 import { asyncHandler } from "../utils/AsyncHandler.js";
 import { ApiResponse } from "../utils/ApiResponse.js";
@@ -557,9 +561,11 @@ export const updateIndicator = asyncHandler(async (req, res) => {
   //  Extract email addresses from the retrieved user 
   const emailList = users.map(user => user.email);
 
+
   for (const email of emailList) {
-    await mailSender(email);
-    console.log(`Email sent to ${email}`);
+    await mailSender(email, `Regarding UpdateIndicator`, `<div>
+      <div>Description: ${updateObj}</div>
+      </div>` );
   }
 
 
@@ -581,11 +587,16 @@ export const postApprisal = asyncHandler(async (req, res) => {
 
   const { Branch, SelectMonth, Employee, remarks } = req.body;
 
-  
+
   // retreiving all the user of same department and designation 
   const userDetail = await User.findOne({ fullName: Employee });
-   
-  await mailSender(userDetail.email);
+
+  await mailSender(userDetail.email, `Regarding Create Apprisal`, `<div>
+    <div>Branch By: ${Branch}</div>
+    <div>SelectMonth: ${SelectMonth}</div>
+    <div>Employee: ${Employee}</div>
+    <div>remarks: ${remarks}</div>
+    </div>`);
 
   const apprisal = await Apprisal.create({
     Branch,
@@ -625,25 +636,25 @@ export const getApprisal = asyncHandler(async (req, res) => {
 
 export const fetchEmployee = asyncHandler(async (req, res) => {
 
-   const {department} = req.body;
+  const { department } = req.body;
 
-     const emp = await User.find({department: department});
+  const emp = await User.find({ department: department });
 
-      return res.status(200).json({
-        status: true ,
-         emp
-      })
-  
+  return res.status(200).json({
+    status: true,
+    emp
+  })
+
 
 })
 
-export const fetchAllEmployee = asyncHandler(async(req ,res)=>{
-  const  emp = await User.find({});
+export const fetchAllEmployee = asyncHandler(async (req, res) => {
+  const emp = await User.find({});
 
-   return res.status(200).json({
-    status:true , 
+  return res.status(200).json({
+    status: true,
     emp
-   })
+  })
 })
 
 export const deleteApprisal = asyncHandler(async (req, res) => {
@@ -659,10 +670,16 @@ export const updateApprisal = asyncHandler(async (req, res) => {
   const { Branch, SelectMonth, Employee, remarks } = req.body;
   const { id } = req.params;
 
-   // retreiving all the user of same department and designation 
-   const userDetail = await User.findOne({ fullName: Employee });
-   
-   await mailSender(userDetail.email);
+  // retreiving all the user of same department and designation 
+  const userDetail = await User.findOne({ fullName: Employee });
+
+  await mailSender(userDetail.email, "Regarding Update Apprisal", `<div>
+  <div>Branch: ${Branch}</div>
+  <div>SelectMonth: ${SelectMonth}</div>
+  <div>Employee: ${Employee}</div>
+  <div>remarks: ${remarks}</div>
+  </div>`);
+
 
   let updateObj = removeUndefined({ Branch, SelectMonth, Employee, remarks });
 
@@ -690,13 +707,18 @@ export const postAssets = asyncHandler(async (req, res) => {
     purchaseDate,
     supportedDate,
     description
-   } = req.body;
+  } = req.body;
 
-    const users = await User.findOne({fullName: Employee});
+  const users = await User.findOne({ fullName: Employee });
 
-    await mailSender(users.email);
-    
-    console.log(`mail send to ${users}`);
+  await mailSender(users.email, "Regarding Create Assets", `<div>
+  <div>Name: ${Name}</div>
+  <div>amount: ${amount}</div>
+  <div> purchaseDate: ${purchaseDate}</div>
+  <div>supportedDate: ${supportedDate}</div>
+  </div>`);
+
+  console.log(`mail send to ${users}`);
 
 
   const apprisal = await Assets.create({
@@ -750,14 +772,22 @@ export const updateAssets = asyncHandler(async (req, res) => {
     amount,
     purchaseDate,
     supportedDate,
-    description 
+    description
   } = req.body;
 
   const { id } = req.params;
 
-  const users = await User.findOne({_id:id});
+  const users = await User.findOne({ _id: id });
 
-  await mailSender(users.email);
+  await mailSender(users.email, "Regarding Update Assets", `<div>
+  <div>Name: ${Name}</div>
+  <div>amount: ${amount}</div>
+  <div> purchaseDate: ${purchaseDate}</div>
+  <div>supportedDate: ${supportedDate}</div>
+  </div>`
+  );
+
+
 
   let updateObj = removeUndefined({
     Name,
@@ -785,16 +815,9 @@ export const updateAssets = asyncHandler(async (req, res) => {
 // =========================GOAL TRACKING API START================
 export const postTracking = asyncHandler(async (req, res) => {
 
-  const {Branch,GoalType,startDate,endDate,subject,target,description,status,rating,progress} = req.body;
+  const { Branch, GoalType, startDate, endDate, subject, target, description, status, rating, progress } = req.body;
 
-    // const users = await User.findOne({fullName: Employee});
-
-    // await mailSender(users.email);
-    
-    // console.log(`mail send to ${users}`);
-
-
-  const tracking = await Tracking.create({Branch,GoalType,startDate,endDate,subject,target,description,status,rating,progress});
+  const tracking = await Tracking.create({ Branch, GoalType, startDate, endDate, subject, target, description, status, rating, progress });
   return res
     .status(200)
     .json(new ApiResponse(200, tracking, " successfully posted"));
@@ -817,11 +840,11 @@ export const deleteTracking = asyncHandler(async (req, res) => {
 });
 
 export const updateTracking = asyncHandler(async (req, res) => {
-  const {Branch,GoalType,startDate,endDate,subject,target,description,status,rating,progress} = req.body;
+  const { Branch, GoalType, startDate, endDate, subject, target, description, status, rating, progress } = req.body;
   const { id } = req.params;
 
 
-  let updateObj = removeUndefined({Branch,GoalType,startDate,endDate,subject,target,description,status,rating,progress});
+  let updateObj = removeUndefined({ Branch, GoalType, startDate, endDate, subject, target, description, status, rating, progress });
 
   const updateTracking = await Tracking.findByIdAndUpdate(
     id,
@@ -839,34 +862,50 @@ export const updateTracking = asyncHandler(async (req, res) => {
 
 // ========================announcement controller================
 export const postAnnouncement = asyncHandler(async (req, res) => {
-  const { title, Branch, Department, Employee, startDate,endDate , description } = req.body;
+  const { title, Branch, Department, Employee, startDate, endDate, description } = req.body;
 
   // retreiving all the user of same department and designation 
-  if(Employee === "All Employee"){
+  if (Employee === "All Employee") {
 
-    const users = await User.find({ department: Department});
- 
-     console.log('users ',users);
+    const users = await User.find({ department: Department });
 
-     for (const user of users) {
-      await mailSender(user.email);
+    for (const user of users) {
+      await mailSender(user.email, "Create Annnouncement ", `<div>
+      <div>title: ${title}</div>
+      <div>Branch: ${Branch}</div>
+      <div>Department: ${Department}</div>
+      <div>Employee: ${Employee}</div>
+      <div>startDate: ${startDate}</div>
+      <div>endDate: ${endDate}</div>
+      <div>description: ${description}</div>
+      </div>`)
+
+
     }
-    
-    
+
+
   }
   else {
 
-     const user = await User.findOne({fullName: Employee});
-     console.log("single ",user);
-    await mailSender(user.email);
+    const user = await User.findOne({ fullName: Employee });
+    await mailSender(user.email, "Create Annnouncement ", `<div>
+    <div>title: ${title}</div>
+    <div>Branch: ${Branch}</div>
+    <div>Department: ${Department}</div>
+    <div>Employee: ${Employee}</div>
+    <div>startDate: ${startDate}</div>
+    <div>endDate: ${endDate}</div>
+    <div>description: ${description}</div>
+    </div>`)
+
   }
 
- 
+
   const announcement = await Announcement.create({
-    title, 
-    Branch, 
-    Department, 
-    Employee, 
+    title,
+    Branch,
+    Department,
+    Employee,
     startDate,
     endDate,
     description: description,
@@ -897,29 +936,42 @@ export const deleteAnnouncement = asyncHandler(async (req, res) => {
 });
 
 export const updateAnnouncement = asyncHandler(async (req, res) => {
-  const { title, Branch, Department, Employee, startDate,endDate,description } = req.body;
+  const { title, Branch, Department, Employee, startDate, endDate, description } = req.body;
   const { id } = req.params;
-  let updateObj = removeUndefined({title, Branch, Department, Employee, startDate,endDate,description});
+  let updateObj = removeUndefined({ title, Branch, Department, Employee, startDate, endDate, description });
 
 
   // retreiving all the user of same department and designation 
-  if(Employee === "All Employee"){
+  if (Employee === "All Employee") {
 
-    const users = await User.find({ department: Department});
- 
-     console.log('users ',users);
+    const users = await User.find({ department: Department });
+    for (const user of users) {
+      await mailSender(user.email, "update Annnouncement ", `<div>
+      <div>title: ${title}</div>
+      <div>Branch: ${Branch}</div>
+      <div>Department: ${Department}</div>
+      <div>Employee: ${Employee}</div>
+      <div>startDate: ${startDate}</div>
+      <div>endDate: ${endDate}</div>
+      <div>description: ${description}</div>
+      </div>`)
 
-     for (const user of users) {
-      await mailSender(user.email);
     }
-    
-    
+
+
   }
   else {
 
-     const user = await User.findOne({fullName: Employee});
-     console.log("single ",user);
-    await mailSender(user.email);
+    const user = await User.findOne({ fullName: Employee });
+    await mailSender(user.email, "update Annnouncement ", `<div>
+    <div>title: ${title}</div>
+    <div>Branch: ${Branch}</div>
+    <div>Department: ${Department}</div>
+    <div>Employee: ${Employee}</div>
+    <div>startDate: ${startDate}</div>
+    <div>endDate: ${endDate}</div>
+    <div>description: ${description}</div>
+    </div>`)
   }
 
 
@@ -937,7 +989,382 @@ export const updateAnnouncement = asyncHandler(async (req, res) => {
     .json(new ApiResponse(200, updateAnnouncement, "Updated  Successfully"));
 });
 
+// ==================== termination apis in backend==============
+
+export const postTermination = asyncHandler(async (req, res) => {
+
+  const { Employee,
+    type,
+    noticeDate,
+    terminationDate,
+    description
+  } = req.body;
+
+  const users = await User.findOne({ fullName: Employee });
+
+  let transporter = createTransport({
+    host: "smtp.gmail.com",
+    auth: {
+      user: "webmaster.kushel@gmail.com",
+      pass: "paurymswxlpytekp",
+    },
+    tls: {
+      rejectUnauthorized: false // Temporarily bypass certificate validation
+    }
+  });
+
+  let info = await transporter.sendMail({
+    from: 'Kushel Digi Solutions" <info@kusheldigi.com>',
+    to: `${users.email}`,
+    subject: "Regarding Termination",
+    html: `<div>
+      <div>Termination Type: ${type}</div>
+      <div>NoticeDate: ${noticeDate}</div>
+      <div>TerminationDate: ${terminationDate}</div>
+      <div>Description: ${description}</div>
+      </div>`
+  });
+
+
+  console.log(`mail send to ${users}`);
+
+
+  const termination = await Termination.create({
+    Employee,
+    type,
+    noticeDate,
+    terminationDate,
+    description
+  });
+  return res
+    .status(200)
+    .json(new ApiResponse(200, termination, " successfully posted"));
+});
+
+export const getTermination = asyncHandler(async (req, res) => {
+  const data = await Termination.find();
+  return res
+    .status(200)
+    .json(new ApiResponse(200, data, " Successfully fetched all the Termination"));
+});
+
+export const deleteTermination = asyncHandler(async (req, res) => {
+  const { id } = req.params;
+  const data = await Termination.findByIdAndDelete(id);
+  return res
+    .status(200)
+    .json(new ApiResponse(200, data, "Deleted Successfully"));
+});
+
+export const updateTermination = asyncHandler(async (req, res) => {
+  const { Employee,
+    type,
+    noticeDate,
+    terminationDate,
+    description } = req.body;
+
+  const { id } = req.params;
+
+  // const users = await User.findOne({ _id: id });
+  const users = await User.findOne({ fullName: Employee });
+
+  let updateObj = removeUndefined({
+    Employee,
+    type,
+    noticeDate,
+    terminationDate,
+    description
+  });
+
+  let transporter = createTransport({
+    host: "smtp.gmail.com",
+    auth: {
+      user: "webmaster.kushel@gmail.com",
+      pass: "paurymswxlpytekp",
+    },
+    tls: {
+      rejectUnauthorized: false // Temporarily bypass certificate validation
+    }
+  });
+
+  let info = await transporter.sendMail({
+    from: 'Kushel Digi Solutions" <info@kusheldigi.com>',
+    to: `${users.email}`,
+    subject: "Regarding Termination",
+    html: `<div>
+      <div>Termination Type: ${type}</div>
+      <div>NoticeDate: ${noticeDate}</div>
+      <div>TerminationDate: ${terminationDate}</div>
+      <div>Description: ${description}</div>
+      </div>`
+  });
+
+  console.log(`mail send to ${users}`);
+
+  const updateTermination = await Termination.findByIdAndUpdate(
+    id,
+    {
+      $set: updateObj,
+    },
+    {
+      new: true,
+    }
+  );
+  return res
+    .status(200)
+    .json(new ApiResponse(200, updateTermination, "Updated  Successfully"));
+});
+
+// ================== warning api=================
+
+export const postWarning = asyncHandler(async (req, res) => {
+
+  const { warningBy,
+    warningTo,
+    subject,
+    warningDate,
+    description
+  } = req.body;
+
+  // const users = await User.findOne({ fullName: warningBy });
+  const users1 = await User.findOne({ fullName: warningTo });
+
+  let transporter = createTransport({
+    host: "smtp.gmail.com",
+    auth: {
+      user: "webmaster.kushel@gmail.com",
+      pass: "paurymswxlpytekp",
+    },
+    tls: {
+      rejectUnauthorized: false // Temporarily bypass certificate validation
+    }
+  });
+
+  let info = await transporter.sendMail({
+    from: 'Kushel Digi Solutions" <asitmandal492@gmail.com>',
+    to: `${users1.email}`,
+    subject: "Regarding Warning",
+    html: `<div>
+      <div>Warning By: ${warningBy}</div>
+      <div>Subject: ${subject}</div>
+      <div>Warning Date: ${warningDate}</div>
+      <div>Description: ${description}</div>
+      </div>`
+  });
+
+
+  console.log(`mail send to ${users1}`);
+
+
+  const termination = await Warning.create({
+    warningBy,
+    warningTo,
+    subject,
+    warningDate,
+    description
+  });
+  return res
+    .status(200)
+    .json(new ApiResponse(200, termination, " successfully posted"));
+});
+
+export const getWarning = asyncHandler(async (req, res) => {
+  const data = await Warning.find();
+  return res
+    .status(200)
+    .json(new ApiResponse(200, data, " Successfully fetched all the Warning"));
+});
+
+export const deleteWarning = asyncHandler(async (req, res) => {
+  const { id } = req.params;
+  const data = await Warning.findByIdAndDelete(id);
+  return res
+    .status(200)
+    .json(new ApiResponse(200, data, "Deleted Successfully"));
+});
+
+export const updateWarning = asyncHandler(async (req, res) => {
+  const { warningBy,
+    warningTo,
+    subject,
+    warningDate,
+    description } = req.body;
+
+  const { id } = req.params;
+
+  const users1 = await User.findOne({ fullName: warningTo });
 
 
 
+  let updateObj = removeUndefined({
+    warningBy,
+    warningTo,
+    subject,
+    warningDate,
+    description
+  });
 
+  let transporter = createTransport({
+    host: "smtp.gmail.com",
+    auth: {
+      user: "webmaster.kushel@gmail.com",
+      pass: "paurymswxlpytekp",
+    },
+    tls: {
+      rejectUnauthorized: false // Temporarily bypass certificate validation
+    }
+  });
+
+  let info = await transporter.sendMail({
+    from: 'Kushel Digi Solutions" <info@kusheldigi.com>',
+    to: `${users1.email}`,
+    subject: "Regarding Warning",
+    html: `<div>
+      <div>Warning By: ${warningBy}</div>
+      <div>Subject: ${subject}</div>
+      <div>Warning Date: ${warningDate}</div>
+      <div>Description: ${description}</div>
+      </div>`
+  });
+
+  console.log(`mail send to ${users1}`);
+
+  const updateTermination = await Warning.findByIdAndUpdate(
+    id,
+    {
+      $set: updateObj,
+    },
+    {
+      new: true,
+    }
+  );
+  return res
+    .status(200)
+    .json(new ApiResponse(200, updateTermination, "Updated  Successfully"));
+});
+
+export const postComplain = asyncHandler(async (req, res) => {
+
+  const { complainFrom,
+    complainAgain,
+    title,
+    complainDate,
+    description
+  } = req.body;
+
+  // const users = await User.findOne({ fullName: warningBy });
+  const users1 = await User.findOne({ fullName: complainAgain });
+
+  let transporter = createTransport({
+    host: "smtp.gmail.com",
+    auth: {
+      user: "webmaster.kushel@gmail.com",
+      pass: "paurymswxlpytekp",
+    },
+    tls: {
+      rejectUnauthorized: false // Temporarily bypass certificate validation
+    }
+  });
+
+  let info = await transporter.sendMail({
+    from: 'Kushel Digi Solutions" <info@kusheldigi.com>',
+    to: `${users1.email}`,
+    subject: "Regarding Warning",
+    html: `<div>
+      <div>Complain From: ${complainFrom}</div>
+      <div>Title: ${title}</div>
+      <div>Complain Date: ${complainDate}</div>
+      <div>Description: ${description}</div>
+      </div>`
+  });
+
+
+  console.log(`mail send to ${users1}`);
+
+
+  const complain = await Complain.create({
+    complainFrom,
+    complainAgain,
+    title,
+    complainDate,
+    description
+  });
+  return res
+    .status(200)
+    .json(new ApiResponse(200, complain, " successfully posted"));
+});
+
+export const getComplain = asyncHandler(async (req, res) => {
+  const data = await Complain.find();
+  return res
+    .status(200)
+    .json(new ApiResponse(200, data, " Successfully fetched all the Warning"));
+});
+
+export const deleteComplain = asyncHandler(async (req, res) => {
+  const { id } = req.params;
+  const data = await Complain.findByIdAndDelete(id);
+  return res
+    .status(200)
+    .json(new ApiResponse(200, data, "Deleted Successfully"));
+});
+
+export const updateComplain = asyncHandler(async (req, res) => {
+  const { complainFrom,
+    complainAgain,
+    title,
+    complainDate,
+    description } = req.body;
+
+  const { id } = req.params;
+
+  const users1 = await User.findOne({ fullName: complainAgain });
+
+
+
+  let updateObj = removeUndefined({
+    complainFrom,
+    complainAgain,
+    title,
+    complainDate,
+    description
+  });
+
+  let transporter = createTransport({
+    host: "smtp.gmail.com",
+    auth: {
+      user: "webmaster.kushel@gmail.com",
+      pass: "paurymswxlpytekp",
+    },
+    tls: {
+      rejectUnauthorized: false // Temporarily bypass certificate validation
+    }
+  });
+
+  let info = await transporter.sendMail({
+    from: 'Kushel Digi Solutions" <info@kusheldigi.com>',
+    to: `${users1.email}`,
+    subject: "Regarding Warning",
+    html: `<div>
+      <div>Complain From: ${complainFrom}</div>
+      <div>Title: ${title}</div>
+      <div>Complain Date: ${complainDate}</div>
+      <div>Description: ${description}</div>
+      </div>`
+  });
+
+  console.log(`mail send to ${users1}`);
+
+  const updateTermination = await Complain.findByIdAndUpdate(
+    id,
+    {
+      $set: updateObj,
+    },
+    {
+      new: true,
+    }
+  );
+  return res
+    .status(200)
+    .json(new ApiResponse(200, updateTermination, "Updated  Successfully"));
+});

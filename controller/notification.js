@@ -4,13 +4,38 @@ import User from "../models/User/User.js"
 export const createNotification = async(req ,res)=>{
     try{
 
-         const {title , description , users} = req.body;
+         const {title , description , users} = req.body
+         
+        // Find user details for each user in the users array
+        const userPromises = users.map(async (userName) => {
+            const userDetail = await User.findOne({ fullName: userName });
+            console.log('userdetail ',userDetail);
+            return userDetail;
+        });
 
-         for(let user of users){
+        console.log("userpromice ",userPromises);
+        
+        // Resolve all userPromises
+        const userDetails = await Promise.all(userPromises);
+        console.log("userDetails ",userDetails);
 
-             const userDetail = await User.findOne({fullName: user});
+             // Create a new notification
+        const newNotification = new Notification({
+            title,
+            description,
+            user: userDetails.map(user => user._id), // Add userIds to the user array
+        });
 
-         }
+        // Save the new notification
+        const savedNotification = await newNotification.save();
+
+        return res.status(200).json({
+            status: true,
+            message: 'Notification created successfully',
+            data: savedNotification,
+        });
+
+
 
     } catch(error){
         return res.status(500).json({
@@ -19,15 +44,16 @@ export const createNotification = async(req ,res)=>{
         })
     }
 }
+
+
 export const getNotification = async(req ,res)=>{
     try{
 
         const {userId} = req.params;
 
            // Find notifications where the user ID is in the user array
-           const notifications = await Notification.find({ user: { $in: [userId] } });
+           const notifications = await Notification.find({ user: { $in: [userId] } }).populate("user");
 
-           console.log('notifion ',notifications);
 
            return res.status(200).json({
                status: 200,
@@ -44,16 +70,21 @@ export const getNotification = async(req ,res)=>{
         })
     }
 }
+
 export const deleteNotification = async(req ,res)=>{
     try{
 
         const {userId  , notId} = req.params;
+
+        console.log('uod ',userId , notId);
 
         const updatedNotification = await Notification.findOneAndUpdate(
             { _id: notId },
             { $pull: { user: userId } },
             { new: true }
         );
+
+        console.log("upte ",updatedNotification);
 
         if (!updatedNotification) {
             return res.status(404).json({
