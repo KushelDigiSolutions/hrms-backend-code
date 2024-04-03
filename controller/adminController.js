@@ -8,6 +8,8 @@ import Tracking from "../models/Tracking/Tracking.js";
 import Termination from "../models/Termination/Termination.js";
 import Warning from "../models/Warning/Warning.js";
 import Complain from "../models/Complain/Complain.js";
+import Resignation from "../models/Resignation/Resignation.js";
+import Promotion from "../models/Promotion/Promotion.js";
 import User from "../models/User/User.js";
 import Project from "../models/Project/Project.js";
 import { createTransport } from "nodemailer";
@@ -1368,3 +1370,238 @@ export const updateComplain = asyncHandler(async (req, res) => {
     .status(200)
     .json(new ApiResponse(200, updateTermination, "Updated  Successfully"));
 });
+
+export const postResignation = asyncHandler(async (req, res) => {
+
+  const {  Employee,
+    noticeDate,
+    resignationDate,
+    description
+  } = req.body;
+
+  // const users = await User.findOne({ fullName: warningBy });
+  const users1 = await User.findOne({ fullName: Employee });
+
+  let transporter = createTransport({
+    host: "smtp.gmail.com",
+    auth: {
+      user: "webmaster.kushel@gmail.com",
+      pass: "paurymswxlpytekp",
+    },
+    tls: {
+      rejectUnauthorized: false // Temporarily bypass certificate validation
+    }
+  });
+
+  let info = await transporter.sendMail({
+    from: 'Kushel Digi Solutions" <info@kusheldigi.com>',
+    to: `${users1.email}`,
+    subject: "Regarding Resignation",
+    html: `<div>
+      <div>Employee: ${Employee}</div>
+      <div>Notice Date: ${noticeDate}</div>
+      <div>Resignation Date: ${resignationDate}</div>
+      <div>Description: ${description}</div>
+      </div>`
+  });
+
+
+  console.log(`mail send to ${users1}`);
+
+
+  const resignation = await Resignation.create({
+    Employee,
+    noticeDate,
+    resignationDate,
+    description
+  });
+  return res
+    .status(200)
+    .json(new ApiResponse(200, resignation, " successfully posted"));
+});
+
+export const getResignation = asyncHandler(async (req, res) => {
+  const data = await Resignation.find();
+  return res
+    .status(200)
+    .json(new ApiResponse(200, data, " Successfully fetched all the Resignation"));
+});
+
+export const deleteResignation = asyncHandler(async (req, res) => {
+  const { id } = req.params;
+  const data = await Resignation.findByIdAndDelete(id);
+  return res
+    .status(200)
+    .json(new ApiResponse(200, data, "Deleted Successfully"));
+});
+
+export const updateResignation = asyncHandler(async (req, res) => {
+  const {Employee,
+    noticeDate,
+    resignationDate,
+    description} = req.body;
+
+  const { id } = req.params;
+
+  const users1 = await User.findOne({ fullName:Employee });
+
+  let updateObj = removeUndefined({
+    Employee,
+    noticeDate,
+    resignationDate,
+    description
+  });
+
+  let transporter = createTransport({
+    host: "smtp.gmail.com",
+    auth: {
+      user: "webmaster.kushel@gmail.com",
+      pass: "paurymswxlpytekp",
+    },
+    tls: {
+      rejectUnauthorized: false // Temporarily bypass certificate validation
+    }
+  });
+
+  let info = await transporter.sendMail({
+    from: 'Kushel Digi Solutions" <info@kusheldigi.com>',
+    to: `${users1.email}`,
+    subject: "Regarding Resignation",
+    html: `<div>
+      <div>Employee: ${Employee}</div>
+      <div>Notice Date: ${noticeDate}</div>
+      <div>Resignation Date: ${resignationDate}</div>
+      <div>Description: ${description}</div>
+      </div>`
+  });
+
+  console.log(`mail send to ${users1}`);
+
+  const updateResignation = await Resignation.findByIdAndUpdate(
+    id,
+    {
+      $set: updateObj,
+    },
+    {
+      new: true,
+    }
+  );
+  return res
+    .status(200)
+    .json(new ApiResponse(200, updateResignation, "Updated  Successfully"));
+});
+
+// ========================promotion apis===========
+
+export const postPromotion = asyncHandler(async (req, res) => {
+
+  const {Employee,Designation,title,promotionDate, description} = req.body;
+
+  // const users = await User.findOne({ fullName: warningBy });
+  const users1 = await User.findOne({ fullName: Employee });
+
+  // const user2 = await User.updateOne({''})
+
+  let transporter = createTransport({
+    host: "smtp.gmail.com",
+    auth: {
+      user: "webmaster.kushel@gmail.com",
+      pass: "paurymswxlpytekp",
+    },
+    tls: {
+      rejectUnauthorized: false // Temporarily bypass certificate validation
+    }
+  });
+
+  let info = await transporter.sendMail({
+    from: 'Kushel Digi Solutions" <info@kusheldigi.com>',
+    to: `${users1.email}`,
+    subject: "Regarding Resignation",
+    html: `<div>
+      <div>Employee: ${Employee}</div>
+      <div>Designation: ${Designation}</div>
+      <div>title: ${title}</div>
+      <div>Promotion Date: ${promotionDate}</div>
+      <div>Description: ${description}</div>
+      </div>`
+  });
+
+
+  console.log(`mail send to ${users1}`);
+
+
+  const promotion = await Promotion.create({
+    Employee,Designation,title,promotionDate, description
+  });
+  return res
+    .status(200)
+    .json(new ApiResponse(200,  promotion, " successfully posted"));
+});
+
+export const getPromotion = asyncHandler(async (req, res) => {
+  const data = await Promotion.find();
+  return res
+    .status(200)
+    .json(new ApiResponse(200, data, " Successfully fetched all the Promotion"));
+});
+
+export const deletePromotion = asyncHandler(async (req, res) => {
+  const { id } = req.params;
+  const data = await Promotion.findByIdAndDelete(id);
+  return res
+    .status(200)
+    .json(new ApiResponse(200, data, "Deleted Successfully"));
+});
+
+export const updatePromotion = asyncHandler(async (req, res) => {
+  const {Employee,Designation,title,promotionDate, description} = req.body;
+
+  const { id } = req.params;
+
+  const users1 = await User.findOne({ fullName:Employee });
+
+  let updateObj = removeUndefined({
+    Employee,Designation,title,promotionDate, description
+  });
+
+  let transporter = createTransport({
+    host: "smtp.gmail.com",
+    auth: {
+      user: "webmaster.kushel@gmail.com",
+      pass: "paurymswxlpytekp",
+    },
+    tls: {
+      rejectUnauthorized: false // Temporarily bypass certificate validation
+    }
+  });
+
+  let info = await transporter.sendMail({
+    from: 'Kushel Digi Solutions" <info@kusheldigi.com>',
+    to: `${users1.email}`,
+    subject: "Regarding Resignation",
+    html: `<div>
+      <div>Employee: ${Employee}</div>
+      <div>Notice Date: ${noticeDate}</div>
+      <div>Resignation Date: ${resignationDate}</div>
+      <div>Description: ${description}</div>
+      </div>`
+  });
+
+  console.log(`mail send to ${users1}`);
+
+  const updatePromotion = await Promotion.findByIdAndUpdate(
+    id,
+    {
+      $set: updateObj,
+    },
+    {
+      new: true,
+    }
+  );
+  return res
+    .status(200)
+    .json(new ApiResponse(200, updatePromotion, "Updated  Successfully"));
+});
+
+
+

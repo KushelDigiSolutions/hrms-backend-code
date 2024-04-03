@@ -41,7 +41,15 @@ import {
   postComplain,
   getComplain,
   deleteComplain,
-  updateComplain
+  updateComplain,
+  postResignation,
+  getResignation,
+  deleteResignation,
+  updateResignation,
+  postPromotion,
+  getPromotion,
+  deletePromotion,
+  updatePromotion
 } from "../controller/adminController.js";
 import isAuthenticated from "../middleware/auth.js";
 import { upload } from "../middleware/multer.js";
@@ -112,5 +120,14 @@ router.get('/getComplain', getComplain);
 router.delete("/deleteComplain/:id",deleteComplain);
 router.put("/updateComplain/:id", updateComplain);
 
+router.post('/postResignation',postResignation);
+router.get('/getResignation', getResignation);
+router.delete("/deleteResignation/:id",deleteResignation);
+router.put("/updateResignation/:id",updateResignation);
+
+router.post('/postPromotion',postPromotion);
+router.get('/getPromotion', getPromotion);
+router.delete("/deletePromotion/:id",deletePromotion);
+router.put("/updatePromotion/:id",updatePromotion);
 
 export default router;

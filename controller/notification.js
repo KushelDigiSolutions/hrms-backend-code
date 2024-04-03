@@ -9,15 +9,12 @@ export const createNotification = async(req ,res)=>{
         // Find user details for each user in the users array
         const userPromises = users.map(async (userName) => {
             const userDetail = await User.findOne({ fullName: userName });
-            console.log('userdetail ',userDetail);
             return userDetail;
         });
 
-        console.log("userpromice ",userPromises);
         
         // Resolve all userPromises
         const userDetails = await Promise.all(userPromises);
-        console.log("userDetails ",userDetails);
 
              // Create a new notification
         const newNotification = new Notification({
@@ -76,15 +73,11 @@ export const deleteNotification = async(req ,res)=>{
 
         const {userId  , notId} = req.params;
 
-        console.log('uod ',userId , notId);
-
         const updatedNotification = await Notification.findOneAndUpdate(
             { _id: notId },
             { $pull: { user: userId } },
             { new: true }
         );
-
-        console.log("upte ",updatedNotification);
 
         if (!updatedNotification) {
             return res.status(404).json({
