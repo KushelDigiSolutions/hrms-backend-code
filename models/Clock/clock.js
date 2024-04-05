@@ -13,6 +13,9 @@ const clockSchema = new mongoose.Schema({
     },
     clockOut: {
         type: String,
+    } , 
+    breakTime:{
+        type:String,
     }
 });
 

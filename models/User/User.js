@@ -4,6 +4,7 @@ import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 import crypto from "crypto";
 
+
 const userSchema = new mongoose.Schema({
   fullName: {
     type: String,
@@ -83,6 +84,7 @@ const userSchema = new mongoose.Schema({
     required: false,
     set: (k) => (k === "" ? undefined : k),
   },
+
 
   // ======new=======
   employeeCode: {

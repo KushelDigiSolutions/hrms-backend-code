@@ -3,13 +3,19 @@ import Clock from "../models/Clock/clock.js"
 export const createClock = async(req ,res)=>{
     try{
 
-     const {  clockInDetail , clockOutDetail , date} = req.body;
+     const {  clockInDetail , clockOutDetail , date ,breakTime} = req.body;
+
+     console.log('cll ',clockInDetail , breakTime);
 
 
       const {userId} = req.params;
 
 
-      const clockDetails = await Clock.create({Date:date , clockIn:clockInDetail , clockOut:clockOutDetail ,user: userId});
+      const clockDetails = await Clock.create({Date:date , clockIn:clockInDetail , clockOut:clockOutDetail ,user: userId , breakTime:breakTime});
+
+    //   console.log(clockDetails);
+    console.log(clockDetails)
+
 
        return res.status(200).json({
         status:true ,
@@ -29,19 +35,20 @@ export const createClock = async(req ,res)=>{
 export const getClockByUserDate = async (req, res) => {
     try {
         const { date } = req.body;
-        console.log('date ',date);
         const { userId } = req.params;
 
-        console.log('suer ',userId);
-
-        const searchDate = new Date(date);
-
-        console.log('serch ',searchDate);
-
+        
+        const searchDateUTC = new Date(date);
+        searchDateUTC.setHours(0, 0, 0, 0); // Reset time to midnight
+        const searchDateEndUTC = new Date(searchDateUTC.getTime() + 24 * 60 * 60 * 1000); // Next day's midnight
+        
         const clockEntries = await Clock.findOne({
             user: userId,
-            Date: { $gte: searchDate, $lt: new Date(searchDate.getTime() + 24 * 60 * 60 * 1000) } 
-        }).select('clockIn clockOut');
+            Date: { $gte: searchDateUTC, $lt: searchDateEndUTC }
+        }).select('clockIn clockOut breakTime');
+        
+        
+
 
 
         return res.status(200).json({
@@ -57,3 +64,4 @@ export const getClockByUserDate = async (req, res) => {
         });
     }
 };
+
